@@ -1,0 +1,15 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+.vscode/
+.idea/
+
+# Python (for future code samples)
+__pycache__/
+*.pyc
+.venv/
+
+# Node (for future code samples)
+node_modules/
