@@ -94,6 +94,7 @@
   #controls{display:flex;align-items:center;gap:12px;justify-content:center;margin-top:14px;color:var(--dim);font-size:13px}
   #controls button{background:#141a45;border:1px solid #2a3378;color:var(--ink);border-radius:8px;padding:7px 15px;font-size:14px;cursor:pointer}
   #controls button:hover{background:#1d2560}
+  #controls select{background:#141a45;border:1px solid #2a3378;color:var(--ink);border-radius:8px;padding:7px;font-size:13px;max-width:260px}
   #progress{width:260px;height:6px;background:#141a45;border-radius:3px;overflow:hidden;border:1px solid #2a3378}
   #progress i{display:block;height:100%;background:var(--blue);width:0%;transition:width .5s}
 
@@ -115,7 +116,9 @@
   <div id="overlay">
     <h1>🎬 THE FEED</h1>
     <p>A system design movie with a real narrator — starring the villain <b style="color:var(--red)">SCALE</b>
-       and seven heroes from the toolbox.<br><br>🔊 Turn your sound on!</p>
+       and seven heroes from the toolbox.<br><br>🔊 Turn your sound on!<br>
+       <span style="font-size:13px;color:var(--gold)">🎙️ Best narrator: open this file in <b>Microsoft Edge</b> — its free “Natural” voices sound human.
+       You can switch voices anytime in the dropdown below the screen.</span></p>
     <button id="btnStart">▶ Start the Movie</button>
   </div>
 
@@ -342,6 +345,7 @@
   <button id="btnPlay">⏸ Pause</button>
   <button id="btnNext">Next ⏭</button>
   <button id="btnMute">🔊 Voice on</button>
+  <select id="voiceSel" title="Narrator voice"></select>
   <div id="progress"><i></i></div>
   <span id="sceneNum"></span>
 </div>
@@ -442,15 +446,35 @@ let si=0, li=-1, playing=false, voiceOn=true, lineTimer=null, chosenVoice=null, 
 const $=id=>document.getElementById(id);
 const synth=window.speechSynthesis||null;
 
+function rankVoice(v){
+  const n=v.name.toLowerCase();
+  if(/natural|neural/.test(n))return 0;      // Edge natural voices — best
+  if(/online/.test(n))return 1;
+  if(/google/.test(n))return 2;
+  if(/aria|jenny|guy|sonia|libby|zira|david|mark|samantha/.test(n))return 3;
+  return 4;
+}
 function pickVoice(){
   if(!synth)return;
-  const vs=synth.getVoices();
-  chosenVoice =
-    vs.find(v=>/en[-_]/i.test(v.lang)&&/natural|neural|aria|jenny|guy|online/i.test(v.name)) ||
-    vs.find(v=>/en[-_]US/i.test(v.lang)) ||
-    vs.find(v=>/^en/i.test(v.lang)) || null;
+  const vs=synth.getVoices().filter(v=>/^en/i.test(v.lang)).sort((a,b)=>rankVoice(a)-rankVoice(b));
+  const sel=$("voiceSel");
+  if(vs.length&&sel.options.length!==vs.length){
+    sel.innerHTML=vs.map((v,i)=>`<option value="${i}">${rankVoice(v)<2?"⭐ ":""}${v.name.replace(/Microsoft |Online |\(Natural\)/g,"").trim()}</option>`).join("");
+    sel.onchange=()=>{chosenVoice=vs[+sel.value]; if(playing)replayLine();};
+  }
+  chosenVoice=vs[sel&&sel.value?+sel.value:0]||null;
 }
 if(synth){pickVoice(); synth.onvoiceschanged=pickVoice;}
+
+/* expressive delivery: the narrator acts, not reads */
+function styleFor(text){
+  let rate=1.0,pitch=1.0;
+  if(/catchphrase|say it with me|remember:/i.test(text)){rate=0.9;pitch=1.12;}          // catchphrases: bright & deliberate
+  else if(/SCALE|villain|deadliest|explodes|game over|freezes|falls to its knees/i.test(text)){rate=0.93;pitch=0.86;} // menace: low & slow
+  else if(/pop quiz|correct|exactly|yes!/i.test(text)){rate=1.02;pitch=1.1;}            // quiz energy
+  else if(/\?$/.test(text)){pitch=1.06;}
+  return{rate,pitch};
+}
 
 function estMs(text){return Math.max(3200, text.split(/\s+/).length*430);}
 
@@ -458,9 +482,10 @@ function speak(text,done){
   clearTimeout(lineTimer);
   if(voiceOn&&synth){
     synth.cancel();
-    const u=new SpeechSynthesisUtterance(text.replace(/[⚡🚦🖥️📚🧩📬🌍🪭⭐👹🤖]/g,""));
+    const u=new SpeechSynthesisUtterance(text.replace(/[⚡🚦🖥️📚🧩📬🌍🪭⭐👹🤖]/g,"").replace(/ — /g,", "));
     if(chosenVoice)u.voice=chosenVoice;
-    u.rate=0.98; u.pitch=1.02;
+    const st=styleFor(text);
+    u.rate=st.rate; u.pitch=st.pitch;
     let called=false; const fin=()=>{if(!called){called=true;done();}};
     u.onend=fin; u.onerror=fin;
     lineTimer=setTimeout(fin, estMs(text)+9000);   // safety net
