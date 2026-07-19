@@ -1,0 +1,271 @@
+1
+00:00:00,000 --> 00:00:05,559
+Grab your popcorn. Every system design interview is secretly a movie.
+
+2
+00:00:05,960 --> 00:00:10,060
+And every good movie... needs a villain.
+
+3
+00:00:10,460 --> 00:00:19,240
+Once upon a time, you built an app where friends share funny posts. It ran on one server.
+
+4
+00:00:19,640 --> 00:00:25,660
+The server kept everything — posts, likes, followers — in one database.
+
+5
+00:00:26,060 --> 00:00:31,620
+A thousand users scrolled happily. Requests came in, answers went out.
+
+6
+00:00:32,020 --> 00:00:38,960
+The computer barely broke a sweat. Fifteen percent effort. Life was easy. Too easy.
+
+7
+00:00:39,359 --> 00:00:46,759
+Then one night, the app went viral. And the villain appeared. Its name... is SCALE.
+
+8
+00:00:47,159 --> 00:00:55,939
+One hundred MILLION users. That's like every kid in three hundred thousand schools showing up at YOUR house.
+
+9
+00:00:56,339 --> 00:01:01,439
+Half a million people refresh their feed every single second.
+
+10
+00:01:01,839 --> 00:01:11,539
+And Scale's deadliest weapon: celebrities. One famous singer posts once — and one hundred million feeds need that post. Immediately.
+
+11
+00:01:11,939 --> 00:01:17,959
+The users swarm in. Our one little server takes every hit alone.
+
+12
+00:01:18,359 --> 00:01:28,979
+It overheats. The database gets asked the same questions millions of times, like a teacher hearing 'what page are we on?' forever.
+
+13
+00:01:29,379 --> 00:01:36,779
+One hundred percent effort. The app freezes. Users leave. We need heroes. Seven of them.
+
+14
+00:01:37,179 --> 00:01:41,819
+Meet our first hero: the Load Balancer. The Doorman.
+
+15
+00:01:42,219 --> 00:01:54,219
+Picture your school cafeteria with only ONE lunch line. Total chaos. Now open ten registers, with a teacher pointing each kid to the shortest line.
+
+16
+00:01:54,620 --> 00:02:06,620
+That's exactly what the Load Balancer does. It stands at the front door and spreads visitors across many servers, so no single server gets crushed.
+
+17
+00:02:07,020 --> 00:02:12,580
+Say it with me: never make everyone stand in one line.
+
+18
+00:02:12,980 --> 00:02:22,219
+But wait — spread visitors across many servers? We only HAVE one. Enter hero number two: the Clone Army.
+
+19
+00:02:22,620 --> 00:02:34,620
+Think of substitute teachers who can jump into ANY class, because the lesson plan lives on a shared drive — not inside one teacher's head.
+
+20
+00:02:35,020 --> 00:02:49,780
+Our servers work the same way. Each clone is identical and remembers nothing personal, so ANY clone can serve ANY user. Busy day? Add more clones. Engineers call this scaling out.
+
+21
+00:02:50,180 --> 00:02:54,360
+The catchphrase: any clone can help any user.
+
+22
+00:02:54,760 --> 00:02:58,940
+Hero number three. The fastest one. The Cache.
+
+23
+00:02:59,340 --> 00:03:08,580
+Imagine walking to the store EVERY time you want a snack. Exhausting. Smart kids keep snacks in their backpack.
+
+24
+00:03:08,980 --> 00:03:24,200
+The Cache is the app's backpack. It keeps popular answers in lightning-fast memory. A million people want the same trending post? The database gets asked once. Everyone else gets the backpack copy.
+
+25
+00:03:24,600 --> 00:03:28,700
+Catchphrase: why ask twice?
+
+26
+00:03:29,100 --> 00:03:33,280
+Hero number four: Read Replicas. The Copy Machines.
+
+27
+00:03:33,680 --> 00:03:42,920
+Thirty students, one textbook. Everyone waits their turn. But photocopy that textbook, and the whole class reads at once.
+
+28
+00:03:43,320 --> 00:03:55,320
+Replicas are photocopies of the database. Reads spread across the copies. Just one golden rule: new posts are WRITTEN to the original, then copied out.
+
+29
+00:03:55,720 --> 00:03:59,900
+Remember: copies for reading, the original for writing.
+
+30
+00:04:00,300 --> 00:04:04,400
+Hero number five: Sharding. The Splitter.
+
+31
+00:04:04,800 --> 00:04:19,560
+Picture an encyclopedia too heavy to lift. So you split it into volumes: A to F, G to M, and so on. Looking up 'Naruto'? Go straight to the N volume.
+
+32
+00:04:19,960 --> 00:04:35,640
+Sharding splits our giant database into pieces by a key, like the username. Each piece lives on its own machine, and a math trick called consistent hashing remembers exactly which volume to grab.
+
+33
+00:04:36,040 --> 00:04:40,220
+Catchphrase: too big to carry? Cut it up.
+
+34
+00:04:40,620 --> 00:04:44,800
+Hero number six: the Message Queue. The Mailroom.
+
+35
+00:04:45,200 --> 00:05:00,420
+Think of the homework drop-box. The teacher doesn't grade your paper the millisecond you hand it in. It waits safely in the tray and gets graded in order. Nothing is ever lost.
+
+36
+00:05:00,820 --> 00:05:18,340
+When you post, the app says 'got it!' instantly — and drops the slow work, like updating your followers' feeds, into the queue. Helper robots called workers grind through it in the background, retrying anything they drop.
+
+37
+00:05:18,740 --> 00:05:22,920
+Catchphrase: not everything needs an answer RIGHT NOW.
+
+38
+00:05:23,320 --> 00:05:27,500
+Our final hero: the CDN. The World Tour.
+
+39
+00:05:27,900 --> 00:05:38,520
+One pizza shop delivering to the entire planet? Australia gets cold pizza every time. The fix: open a shop in every neighborhood.
+
+40
+00:05:38,920 --> 00:05:52,300
+The CDN keeps copies of photos and videos in hundreds of spots around the globe. A kid in Japan downloads from Tokyo, not from a server in Virginia.
+
+41
+00:05:52,699 --> 00:05:56,800
+Catchphrase: keep copies close to the fans.
+
+42
+00:05:57,199 --> 00:06:04,139
+Our seven heroes, together. The Doorman splits the line. The Clone Army serves everyone.
+
+43
+00:06:04,539 --> 00:06:11,019
+The Cache keeps snacks in the backpack. The Copy Machines photocopy the textbook.
+
+44
+00:06:11,419 --> 00:06:16,519
+The Splitter cuts the encyclopedia. The Mailroom holds the homework.
+
+45
+00:06:16,919 --> 00:06:26,159
+The World Tour delivers pizza everywhere. And... there's one mystery hero still hiding. You'll meet them in the finale.
+
+46
+00:06:26,559 --> 00:06:32,579
+Time for the final battle plan. Watch the team take their positions.
+
+47
+00:06:32,979 --> 00:06:39,000
+Photos and videos? The CDN handles those before they even reach us.
+
+48
+00:06:39,399 --> 00:06:44,500
+Everything else goes through the Doorman to the Clone Army.
+
+49
+00:06:44,899 --> 00:06:52,759
+The clones check the Cache first — most feeds are already sitting there, ready to go.
+
+50
+00:06:53,159 --> 00:07:00,099
+New posts are written to the database original, then spread across replicas and shards.
+
+51
+00:07:00,499 --> 00:07:10,659
+And the slow work — copying posts into followers' feeds — drops into the queue, where worker robots handle it calmly.
+
+52
+00:07:11,059 --> 00:07:17,079
+But Scale has one final move. The celebrity. One hundred million followers.
+
+53
+00:07:17,479 --> 00:07:28,099
+If our workers copy her post into one hundred million feeds, the mailroom explodes. One post. One hundred million writes. Game over?
+
+54
+00:07:28,499 --> 00:07:34,979
+No. Because NOW the mystery hero steps out of the shadows: Hybrid Fan-out.
+
+55
+00:07:35,379 --> 00:07:48,759
+For regular users with a few hundred followers, we PUSH: copy their posts into friends' feeds right away. Cheap and instant, like handing out a few party invites.
+
+56
+00:07:49,159 --> 00:08:02,079
+For celebrities, we DON'T copy. When you open the app, it PULLS their newest posts fresh and mixes them into your feed. One copy, read by millions.
+
+57
+00:08:02,479 --> 00:08:12,179
+Your ready-made feed, plus fresh celebrity posts, merged in a fifth of a second. The villain falls to its knees.
+
+58
+00:08:12,579 --> 00:08:17,679
+So how do you beat Scale? Four ideas. That's all.
+
+59
+00:08:18,079 --> 00:08:23,639
+One: spread the work. Many small machines beat one big machine.
+
+60
+00:08:24,039 --> 00:08:29,599
+Two: don't repeat work. Cache the popular stuff. Why ask twice?
+
+61
+00:08:29,999 --> 00:08:35,559
+Three: do slow work later. Queues keep the app feeling instant.
+
+62
+00:08:35,959 --> 00:08:41,979
+And four: treat giants differently. Push for regular folks, pull for celebrities.
+
+63
+00:08:42,379 --> 00:08:53,919
+Pop quiz! Question one: a million people ask for the SAME trending post. Who saves the day? ... It's the Cache. Why ask twice?
+
+64
+00:08:54,319 --> 00:09:06,319
+Question two: kids in Japan say videos load slowly from a server in America. Which hero helps? ... The CDN. Copies close to the fans.
+
+65
+00:09:06,719 --> 00:09:18,719
+Last one. A celebrity with one hundred million followers posts. What's the smart plan? ... Pull it fresh. Hybrid fan-out. You're ready for the interview.
+
+66
+00:09:19,119 --> 00:09:32,039
+Scale: defeated. And here's the secret — you now know the real answer to a famous interview question: design a news feed for one hundred million users.
+
+67
+00:09:32,439 --> 00:09:39,839
+Spread the work. Cache the popular stuff. Queue the slow stuff. And treat celebrities differently.
+
+68
+00:09:40,239 --> 00:09:44,419
+Roll credits. See you in the next movie.
