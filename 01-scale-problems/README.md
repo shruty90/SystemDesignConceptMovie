@@ -2,6 +2,12 @@
 
 **The core question:** "This works for 100 users. Now make it work for 100 million."
 
+## 🎬 Watch the movie first
+
+Open `movie-news-feed.html` in your browser for **THE FEED** — a narrated, animated tutorial that teaches this category as a three-act movie (villain: SCALE; heroes: the toolbox).
+
+**🎙️ Recommended voice:** pick **Google UK English Female** from the voice dropdown below the screen — it's the clearest, most natural narrator (available in Chrome; in Edge, the ⭐ "Natural" voices are also excellent). Editors: see `video-export/` for the Premiere import kit.
+
 These problems test horizontal scaling, load balancing, caching layers, CDNs, fan-out strategies, and stateless service design.
 
 ## Popular interview problems in this category

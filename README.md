@@ -12,6 +12,8 @@ Simple, focused tutorials covering system design and AI concepts, organized arou
 | `04-ai-systems/` | AI / ML systems | LLM serving, RAG, recommendation systems, ML infra |
 | `05-fundamentals/` | Core concepts | Building blocks every problem reuses: caching, sharding, load balancing, queues |
 
+Each folder contains a `README.md` (popular problems mapped to the category) and a `TOOLBOX.md` (the core technical concepts that solve them).
+
 ## How problems map to folders
 
 Popular interview problems (sourced from LeetCode Discuss, Medium, dev.to — see each folder's README for links):
