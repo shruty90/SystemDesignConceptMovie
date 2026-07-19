@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>InterviewPrep Pictures — System Design Movies</title>
+<style>
+  :root{--bg:#07091a;--ink:#e8ecff;--dim:#98a0d4;--gold:#ffd166;--red:#ff4d6d;
+        --blue:#4dabff;--green:#3ddc97;--purple:#b388ff;--chip:#121741;--border:#2a3378}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:radial-gradient(ellipse at 50% 0%,#141a45 0%,var(--bg) 55%);color:var(--ink);
+       font-family:"Segoe UI",system-ui,sans-serif;min-height:100vh;padding:50px 20px}
+  header{text-align:center;margin-bottom:50px}
+  header .studio{font-size:14px;letter-spacing:6px;color:var(--dim);text-transform:uppercase}
+  header h1{font-size:52px;font-weight:900;letter-spacing:2px;margin:10px 0;
+    background:linear-gradient(180deg,#fff,#6ea8ff);-webkit-background-clip:text;background-clip:text;color:transparent}
+  header p{color:var(--dim);font-size:16px;max-width:640px;margin:0 auto;line-height:1.6}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px;max-width:1080px;margin:0 auto}
+  .poster{background:var(--chip);border:1px solid var(--border);border-radius:16px;padding:28px 24px;
+          position:relative;transition:transform .2s,border-color .2s;display:block;color:var(--ink);text-decoration:none}
+  a.poster:hover{transform:translateY(-6px);border-color:var(--gold)}
+  .poster .num{font-size:12px;letter-spacing:3px;color:var(--dim)}
+  .poster .icon{font-size:64px;margin:14px 0;display:block}
+  .poster h2{font-size:22px;font-weight:800;margin-bottom:6px}
+  .poster .tagline{font-size:13.5px;color:var(--dim);line-height:1.5;min-height:60px}
+  .poster .villain{margin-top:14px;font-size:12px;color:var(--red)}
+  .badge{position:absolute;top:16px;right:16px;font-size:11px;font-weight:700;letter-spacing:1px;
+         padding:4px 12px;border-radius:14px}
+  .now{background:rgba(61,220,151,.15);border:1px solid var(--green);color:var(--green)}
+  .soon{background:rgba(152,160,212,.12);border:1px solid var(--border);color:var(--dim)}
+  .poster.locked{opacity:.65}
+  footer{text-align:center;margin-top:50px;color:var(--dim);font-size:13px;line-height:1.8}
+  footer a{color:var(--blue)}
+</style>
+</head>
+<body>
+<header>
+  <div class="studio">InterviewPrep Pictures presents</div>
+  <h1>SYSTEM DESIGN: THE SAGA</h1>
+  <p>Every system design interview is secretly a movie — a villain (the problem), a cast of heroes (the toolbox),
+     and a climax (the architecture). One film per category. Sound on. 🔊</p>
+</header>
+
+<div class="grid">
+  <a class="poster" href="01-scale-problems/movie-news-feed.html">
+    <span class="badge now">NOW SHOWING</span>
+    <div class="num">EPISODE 01 · SCALE PROBLEMS</div>
+    <span class="icon">👹</span>
+    <h2>THE FEED</h2>
+    <div class="tagline">One server. One hundred million users. Seven heroes stand between your app and total meltdown.</div>
+    <div class="villain">Villain: SCALE · Runtime ~10 min · Includes pop quiz</div>
+  </a>
+
+  <div class="poster locked">
+    <span class="badge soon">COMING SOON</span>
+    <div class="num">EPISODE 02 · RESOURCE-CONSTRAINED</div>
+    <span class="icon">🐘</span>
+    <h2>THE DATA THAT WOULDN'T FIT</h2>
+    <div class="tagline">A 10GB file. 512MB of memory. When you can't lift the elephant, you slice it.</div>
+    <div class="villain">Villain: THE ELEPHANT (data bigger than RAM)</div>
+  </div>
+
+  <div class="poster locked">
+    <span class="badge soon">COMING SOON</span>
+    <div class="num">EPISODE 03 · DATABASE READ/WRITE</div>
+    <span class="icon">⚔️</span>
+    <h2>THE DOUBLE BOOKING</h2>
+    <div class="tagline">Two fans. One concert seat. A millisecond apart. Somebody's write has to lose — safely.</div>
+    <div class="villain">Villain: THE RACE CONDITION</div>
+  </div>
+
+  <div class="poster locked">
+    <span class="badge soon">COMING SOON</span>
+    <div class="num">EPISODE 04 · AI SYSTEMS</div>
+    <span class="icon">🤖</span>
+    <h2>THE HALLUCINATION</h2>
+    <div class="tagline">An AI that answers everything — including things that aren't true. Retrieval to the rescue.</div>
+    <div class="villain">Villain: MADE-UP FACTS (and runaway GPU bills)</div>
+  </div>
+
+  <div class="poster locked">
+    <span class="badge soon">COMING SOON</span>
+    <div class="num">EPISODE 05 · FUNDAMENTALS</div>
+    <span class="icon">🧱</span>
+    <h2>ORIGIN STORIES</h2>
+    <div class="tagline">Before they were heroes: how caching, hashing, queues, and consistency got their powers.</div>
+    <div class="villain">Villain: HAND-WAVING in interviews</div>
+  </div>
+</div>
+
+<footer>
+  🎙️ Best experience: Chrome with the <b>Google UK English Female</b> voice, or Edge with a ⭐ Natural voice.<br>
+  Study notes live in each folder: <code>README.md</code> (the problems) and <code>TOOLBOX.md</code> (the concepts).
+</footer>
+</body>
+</html>
