@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    body { margin: 0; background: #0a0a12; overflow: hidden; }
+    @font-face { font-family: 'JetBrains Mono'; font-display: swap; }
+  </style>
+  <script>window.OM_SCENES = '[{"name":"The Problem","dur":6},{"name":"Chunky","dur":5},{"name":"Sorty","dur":5},{"name":"Heapy","dur":5},{"name":"Patch","dur":5},{"name":"Ghost","dur":5},{"name":"Checkpoint","dur":5},{"name":"The Climax","dur":9},{"name":"Victory","dur":6}]';</script>
+  <script>window.OM_PLAYBACK = '{"mode":"loop"}';</script>
+  <script>window.TWEAK_DEFAULTS = {"motionEditor":true};</script>
+</helmet>
+
+<x-import component-from-global-scope="TweaksPanel" from="./tweaks-panel.jsx">
+  <x-import component-from-global-scope="TweakToggle" hint-size="0,0">
+  </x-import>
+</x-import>
+
+<x-import component-from-global-scope="SceneStage" from="./animations-v2.jsx ./scenes.jsx"
+  width="1920" height="1080" bg="#0a0a12"
+  scenes="{{ scenesData }}"
+  playback="{{ playbackData }}"
+  scene-map="{{ sceneMap }}"
+  hint-size="100%,100%">
+</x-import>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1920,&quot;height&quot;:1080}}">
+class Component extends DCLogic {
+  componentDidMount() {
+    const poll = () => {
+      if (window.SceneVictory && window.SceneCheckpoint) { this.forceUpdate(); return; }
+      requestAnimationFrame(poll);
+    };
+    poll();
+  }
+  renderVals() {
+    const sceneMap = {
+      'The Problem': window.SceneProblem,
+      'Chunky': window.SceneChunky,
+      'Sorty': window.SceneSorty,
+      'Heapy': window.SceneHeapy,
+      'Patch': window.ScenePatch,
+      'Ghost': window.SceneGhost,
+      'Checkpoint': window.SceneCheckpoint,
+      'The Climax': window.SceneClimax,
+      'Victory': window.SceneVictory,
+    };
+    return {
+      scenesData: window.OM_SCENES,
+      playbackData: window.OM_PLAYBACK,
+      sceneMap,
+    };
+  }
+}
+</script>
+</body>
+</html>
