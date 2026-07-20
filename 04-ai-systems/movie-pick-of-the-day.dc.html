@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PICK OF THE DAY — An AI Systems Movie</title>
+<style>
+  @keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+  @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+  @keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+  @keyframes roll{from{top:540px}to{top:-900px}}
+  body{margin:0;font-family:"Segoe UI",system-ui,sans-serif}
+</style>
+</helmet>
+<div style="width:100%;min-height:100vh;background:#07091a;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;box-sizing:border-box">
+  <div style="width:960px;max-width:100%;height:540px;background:radial-gradient(ellipse at 50% 30%,#141a45 0%,#0d1130 60%,#080b22 100%);border-radius:14px;position:relative;overflow:hidden;box-shadow:0 0 80px rgba(77,171,255,.15)" data-screen-label="Stage">
+
+    <sc-if value="{{ notStarted }}" hint-placeholder-val="{{ true }}">
+      <div style="position:absolute;inset:0;z-index:100;background:rgba(4,6,20,.94);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center;padding:40px;box-sizing:border-box">
+        <h1 style="font-size:38px;font-weight:900;letter-spacing:2px;color:#e8ecff;margin:0">🎬 PICK OF THE DAY</h1>
+        <p style="color:#98a0d4;max-width:560px;line-height:1.6;font-size:15px;margin:0">A recommendation-system story — starring the three-headed villain <b style="color:#ff4d6d">CHAOS</b>, and eight heroes from the toolbox.<br><br>🔊 Turn your sound on! Pick a narrator voice below, then press start.</p>
+        <select style="background:#141a45;border:1px solid #2a3378;color:#e8ecff;border-radius:8px;padding:9px 12px;font-size:14px;max-width:320px" value="{{ voiceURI }}" onChange="{{ onVoiceChange }}">
+          <option value="">Default voice</option>
+          <sc-for list="{{ voiceOptions }}" as="v" hint-placeholder-count="1">
+            <option value="{{ v.voiceURI }}">{{ v.label }}</option>
+          </sc-for>
+        </select>
+        <button style="background:linear-gradient(135deg,#2b6cb0,#4dabff);border:none;color:#fff;font-size:19px;font-weight:700;padding:13px 38px;border-radius:40px;cursor:pointer;box-shadow:0 8px 30px rgba(77,171,255,.4)" style-hover="transform:scale(1.05)" onClick="{{ onStart }}">▶ Start the Movie</button>
+      </div>
+    </sc-if>
+
+    <div style="position:absolute;top:24px;left:0;right:0;text-align:center;z-index:50;font-size:11.5px;letter-spacing:4px;color:#ffd166;text-transform:uppercase">{{ currentLabel }}</div>
+
+    <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:70px 60px 90px;box-sizing:border-box">
+      <sc-for list="{{ scenes }}" as="scene" hint-placeholder-count="1">
+        <sc-if value="{{ scene.active }}" hint-placeholder-val="{{ false }}">
+          <div key="{{ scene.idx }}" style="width:100%;max-width:780px;display:flex;flex-direction:column;align-items:center;gap:16px;text-align:center;animation:fadeUp .7s ease both">
+
+            <sc-if value="{{ scene.credits }}" hint-placeholder-val="{{ false }}">
+              <div style="position:relative;height:380px;width:100%;overflow:hidden">
+                <div style="position:absolute;left:0;right:0;top:540px;text-align:center;font-size:15px;line-height:2.1;color:#98a0d4;animation:roll 26s linear both">
+                  <div style="font-size:26px;font-weight:900;color:#e8ecff">THE END</div><br/>
+                  <div>Villain: <b style="color:#ff4d6d">CHAOS</b></div>
+                  <div style="color:#ffd166">Starring the Eight Heroes</div>
+                  <div>The Matchmaker · The Scout · The Judge</div>
+                  <div>The Shared Notebook · The Budget Keeper</div>
+                  <div>The Test Grader · The Bouncer · The Diary</div>
+                  <div style="color:#ffd166">and Explore vs Exploit</div>
+                  <br/><div>Directed by: You, the future system designer</div>
+                  <br/><br/><div style="color:#98a0d4">See you in the next movie.</div>
+                </div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ scene.showIcon }}" hint-placeholder-val="{{ false }}">
+              <div class="floaty" style="font-size:96px;filter:drop-shadow(0 0 30px rgba(77,171,255,.35));animation:floaty 3.2s ease-in-out infinite">{{ scene.icon }}</div>
+            </sc-if>
+
+            <sc-if value="{{ scene.heading }}" hint-placeholder-val="{{ false }}">
+              <div style="font-size:30px;font-weight:900;color:{{ scene.headingColor }};letter-spacing:1px">{{ scene.heading }}</div>
+            </sc-if>
+            <sc-if value="{{ scene.sub }}" hint-placeholder-val="{{ false }}">
+              <div style="font-size:15px;color:#ffd166;letter-spacing:2px;text-transform:uppercase">{{ scene.sub }}</div>
+            </sc-if>
+
+            <sc-if value="{{ scene.chips }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;max-width:700px">
+                <sc-for list="{{ scene.chips }}" as="chip" hint-placeholder-count="2">
+                  <div style="display:flex;align-items:center;gap:9px;background:#121741;border:1px solid #2a3378;border-radius:12px;padding:12px 16px;font-size:14.5px;color:#e8ecff;max-width:320px;text-align:left">
+                    <span style="font-size:22px">{{ chip.icon }}</span><span>{{ chip.text }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ scene.flow }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;align-items:center;max-width:740px">
+                <sc-for list="{{ scene.flow }}" as="node" hint-placeholder-count="3">
+                  <div style="display:flex;align-items:center;gap:8px">
+                    <div style="display:flex;flex-direction:column;align-items:center;gap:4px;background:#121741;border:1px solid #2a3378;border-radius:10px;padding:10px 12px;width:110px">
+                      <div style="font-size:26px">{{ node.icon }}</div>
+                      <div style="font-size:11px;color:#98a0d4">{{ node.label }}</div>
+                    </div>
+                    <sc-if value="{{ node.arrow }}" hint-placeholder-val="{{ false }}">
+                      <div style="color:#4dabff;font-size:20px">→</div>
+                    </sc-if>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ scene.quiz }}" hint-placeholder-val="{{ false }}">
+              <div style="background:#121741;border:1px solid #2a3378;border-radius:14px;padding:20px 24px;width:100%;max-width:680px">
+                <h3 style="font-size:17px;margin:0 0 14px;color:#e8ecff;font-weight:700">{{ scene.quiz.question }}</h3>
+                <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center">
+                  <sc-for list="{{ scene.quiz.options }}" as="opt" hint-placeholder-count="3">
+                    <button disabled="{{ scene.quiz.answered }}" onClick="{{ opt.onClick }}" style="background:{{ opt.bg }};border:1px solid {{ opt.border }};color:{{ opt.color }};border-radius:9px;padding:11px 16px;font-size:14.5px;cursor:pointer">{{ opt.text }}</button>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-if>
+
+          </div>
+        </sc-if>
+      </sc-for>
+    </div>
+
+    <div style="position:absolute;left:0;right:0;bottom:30px;z-index:50;text-align:center;padding:0 50px">
+      <div style="display:inline-block;background:rgba(0,0,0,.7);border-radius:8px;padding:10px 20px;font-size:16.5px;line-height:1.5;max-width:800px;color:#e8ecff">{{ currentCaption }}</div>
+    </div>
+  </div>
+
+  <div style="display:flex;align-items:center;gap:12px;justify-content:center;color:#98a0d4;font-size:13px;flex-wrap:wrap">
+    <button onClick="{{ onPrev }}" style="background:#141a45;border:1px solid #2a3378;color:#e8ecff;border-radius:8px;padding:7px 15px;font-size:14px;cursor:pointer">⏮ Prev</button>
+    <button onClick="{{ onPlayPause }}" style="background:#141a45;border:1px solid #2a3378;color:#e8ecff;border-radius:8px;padding:7px 15px;font-size:14px;cursor:pointer">{{ playPauseLabel }}</button>
+    <button onClick="{{ onNext }}" style="background:#141a45;border:1px solid #2a3378;color:#e8ecff;border-radius:8px;padding:7px 15px;font-size:14px;cursor:pointer">Next ⏭</button>
+    <button onClick="{{ onRestart }}" style="background:#141a45;border:1px solid #2a3378;color:#e8ecff;border-radius:8px;padding:7px 15px;font-size:14px;cursor:pointer">⟲ Restart</button>
+    <div style="width:220px;height:6px;background:#141a45;border-radius:3px;overflow:hidden;border:1px solid #2a3378">
+      <i style="display:block;height:100%;background:#4dabff;width:{{ progressPct }}%"></i>
+    </div>
+    <select value="{{ voiceURI }}" onChange="{{ onVoiceChange }}" style="background:#141a45;border:1px solid #2a3378;color:#e8ecff;border-radius:8px;padding:7px;font-size:13px;max-width:220px">
+      <option value="">Default voice</option>
+      <sc-for list="{{ voiceOptions }}" as="v" hint-placeholder-count="1">
+        <option value="{{ v.voiceURI }}">{{ v.label }}</option>
+      </sc-for>
+    </select>
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1040,&quot;height&quot;:720},&quot;extraPauseMs&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:500,&quot;min&quot;:0,&quot;max&quot;:2000,&quot;step&quot;:100,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Pacing&quot;}}">
+class Component extends DCLogic {
+  state = { started:false, sceneIdx:0, lineIdx:0, playing:false, voices:[], voiceURI:'', quiz:{} };
+
+  constructor(props){
+    super(props);
+    this.SCENES = [
+      {label:'Title', icon:'🎬', heading:'PICK OF THE DAY', headingColor:'#e8ecff', sub:'a recommendation-system story',
+        lines:['InterviewPrepTool Pictures presents...','PICK OF THE DAY — a recommendation-system story.']},
+      {label:'Act One · A Peaceful Start', icon:'📼', heading:'100 videos. 100 happy viewers.', headingColor:'#e8ecff',
+        chips:[{icon:'📚',text:'A librarian picks the right video for each visitor, by hand.'},{icon:'🙂',text:'Everyone finds something good. Easy.'}],
+        lines:['Once upon a time, you built a video app with just one hundred videos.','A librarian could recommend the right video to each visitor, by hand.','One hundred people watched happily every day. Easy.']},
+      {label:'Act One · Enter the Villain', icon:'👹', heading:'C H A O S', headingColor:'#ff4d6d',
+        chips:[{icon:'😵',text:'Head one: BAD GUESSES — recommending videos nobody wants.'},{icon:'💸',text:'Head two: MONEY PIT — checking every video for every person costs a fortune.'},{icon:'🐌',text:'Head three: SLOWPOKE — taking so long that people give up.'}],
+        lines:['Then, one day, the app went viral. And a three-headed monster showed up.','Its name... is CHAOS.','Head one: BAD GUESSES — recommending videos nobody wants.','Head two: MONEY PIT — checking every single video for every single person costs a fortune.','Head three: SLOWPOKE — taking so long that people give up and leave.']},
+      {label:'Act One · The Fall', icon:'🔥', heading:'50 million videos. 10 million visitors a minute.', headingColor:'#e8ecff',
+        chips:[{icon:'📖',text:'Comparing everything to everyone is like reading every book in a library out loud, for every single visitor.'},{icon:'😩',text:'System effort: maxed out at 100%.'}],
+        lines:['Now there are fifty million videos, and ten million people open the app every single minute.','Comparing every person to every video is like reading every book in a giant library out loud, for every visitor.','The app slows to a crawl. Recommendations get generic and boring. People leave. We need heroes. Eight of them.']},
+      {label:'Act Two · Hero 1 of 8', icon:'🧬', heading:'The Matchmaker', headingColor:'#e8ecff', sub:'Embeddings + vector search',
+        chips:[{icon:'👃',text:'Gives every person and every video a tiny fingerprint — like a scent.'},{icon:'🧲',text:'Finds fingerprints that smell alike.'}],
+        lines:['Meet our first hero: the Matchmaker.','Imagine turning every video\u2019s mood and topic into a tiny fingerprint, like a scent.','The Matchmaker gives everyone and everything a fingerprint, then finds fingerprints that smell alike.','Catchphrase: things that are alike, smell alike.']},
+      {label:'Act Two · Hero 2 of 8', icon:'🔦', heading:'The Scout', headingColor:'#e8ecff', sub:'Candidate generation',
+        chips:[{icon:'📚',text:'A librarian doesn\u2019t read every book before helping you — she grabs a rough armful fast.'},{icon:'🎯',text:'50 million videos narrowed down to a few hundred candidates.'}],
+        lines:['Hero number two: the Scout.','A librarian doesn\u2019t read every book before helping you. She grabs a rough armful based on your favorite section.','The Scout does the same: it quickly narrows fifty million videos down to a few hundred good guesses.','Catchphrase: don\u2019t check everything — grab a good armful, fast.']},
+      {label:'Act Two · Hero 3 of 8', icon:'⚖️', heading:'The Judge', headingColor:'#e8ecff', sub:'Ranking model',
+        chips:[{icon:'🔍',text:'Studies each of the few hundred candidates closely.'},{icon:'🏆',text:'Ranks them from best to worst.'}],
+        lines:['Hero number three, and the most careful one: the Judge.','Now that we have a few hundred candidates, someone careful looks closer.','The Judge studies each one closely — how long you watched similar things, the time of day, what your friends liked — and ranks them best to worst.','Catchphrase: a smaller pile deserves a closer look.']},
+      {label:'Act Two · Hero 4 of 8', icon:'📓', heading:'The Shared Notebook', headingColor:'#e8ecff', sub:'Feature store',
+        chips:[{icon:'📗',text:'Keeps ONE true set of facts about each person and video.'},{icon:'🔁',text:'The same facts are used for training AND for real recommendations.'}],
+        lines:['Hero number four: the Shared Notebook.','Imagine a coach who trains using last season\u2019s stats, but grades players using totally different stats on game day. Confusing, and wrong.','The Shared Notebook keeps one set of facts, used both for training and for the real recommendation. No mismatches.','Catchphrase: train and play from the same notebook.']},
+      {label:'Act Two · Hero 5 of 8', icon:'💰', heading:'The Budget Keeper', headingColor:'#e8ecff', sub:'Model routing + caching',
+        chips:[{icon:'🥪',text:'Sends easy questions to a cheap, fast helper.'},{icon:'🧠',text:'Calls in the expensive expert only for the tricky ones.'},{icon:'♻️',text:'Remembers answers it already gave, so it never redoes the same work.'}],
+        lines:['Hero number five: the Budget Keeper.','You don\u2019t hire a world-class chef to make you a peanut butter sandwich.','The Budget Keeper sends easy questions to a cheap, fast helper, and only calls in the expensive expert for the tricky ones. It also remembers answers it already gave.','Catchphrase: save the expert for the hard stuff.']},
+      {label:'Act Two · Hero 6 of 8', icon:'🧪', heading:'The Test Grader', headingColor:'#e8ecff', sub:'Evaluation',
+        chips:[{icon:'👅',text:'Tastes new recommendations before real people ever see them.'},{icon:'📊',text:'Checks a small live test group before the full launch.'}],
+        lines:['Hero number six: the Test Grader.','Before a new recipe goes on the menu, a chef tastes it first — not the customer.','The Test Grader checks recommendations on a practice set before they ever reach real people, then watches a small live test group to be sure it\u2019s actually better.','Catchphrase: taste it before you serve it.']},
+      {label:'Act Two · Hero 7 of 8', icon:'🛂', heading:'The Bouncer', headingColor:'#e8ecff', sub:'Guardrails',
+        chips:[{icon:'🚫',text:'Blocks unsafe, low-quality, or rule-breaking recommendations.'},{icon:'✅',text:'Double-checks every pick before it\u2019s shown to you.'}],
+        lines:['Hero number seven: the Bouncer.','A good restaurant doesn\u2019t let just anything onto the menu — no spoiled food, nothing that breaks the rules.','The Bouncer double-checks every recommendation for safety and quality before it\u2019s shown to you.','Catchphrase: check it at the door.']},
+      {label:'Act Two · Hero 8 of 8', icon:'📔', heading:'The Diary', headingColor:'#e8ecff', sub:'Feedback loops + drift monitoring',
+        chips:[{icon:'👀',text:'Writes down what people actually watched, skipped, or loved.'},{icon:'🌊',text:'Notices when the world quietly shifts, so the system can relearn.'}],
+        lines:['Hero number eight, and our last one for now: the Diary.','Tastes change. What you loved last summer might bore you today.','The Diary writes down what people actually watched, skipped, or loved, and notices when the world shifts — so the system can relearn.','Catchphrase: keep listening, or fall behind.']},
+      {label:'Act Two · Roll Call', icon:'🎉', heading:'Our Eight Heroes', headingColor:'#e8ecff',
+        chips:[{icon:'🧬',text:'The Matchmaker finds things that are alike.'},{icon:'🔦',text:'The Scout grabs a fast armful.'},{icon:'⚖️',text:'The Judge takes a closer look.'},{icon:'📓',text:'The Shared Notebook keeps one true set of facts.'},{icon:'💰',text:'The Budget Keeper saves the expert for hard questions.'},{icon:'🧪',text:'The Test Grader tastes before serving.'},{icon:'🛂',text:'The Bouncer checks it at the door.'},{icon:'📔',text:'The Diary keeps listening.'}],
+        lines:['Our eight heroes, together. The Matchmaker finds things that are alike. The Scout grabs a fast armful. The Judge takes a closer look.','The Shared Notebook keeps one true set of facts. The Budget Keeper saves the expert for hard questions.','The Test Grader tastes before serving. The Bouncer checks it at the door. The Diary keeps listening.','But there\u2019s one more mystery hero — waiting for the trickiest problem of all.']},
+      {label:'Act Three · Assembling the Team', icon:'🧩', heading:'Taking Their Positions', headingColor:'#e8ecff',
+        flow:[{icon:'🧬',label:'Matchmaker'},{icon:'🔦',label:'Scout'},{icon:'⚖️',label:'Judge'},{icon:'📓',label:'Notebook'},{icon:'💰',label:'Budget Keeper'},{icon:'🛂',label:'Bouncer'},{icon:'📔',label:'Diary'}],
+        lines:['Time to watch the team take their positions.','A visitor opens the app. The Matchmaker gives everything a fingerprint.','The Scout narrows the giant library down to a few hundred candidates.','The Judge ranks them, using facts pulled from the Shared Notebook.','The Budget Keeper decides which model handles it, and checks its memory for repeats.','The Bouncer checks the final list, and the Diary quietly writes down what happens next.']},
+      {label:'Act Three · The Final Battle', icon:'🌱', heading:'Explore vs. Exploit', headingColor:'#3ddc97', sub:'The mystery hero',
+        chips:[{icon:'🏆',text:'EXPLOIT: for things we know well, recommend the safe, proven favorites.'},{icon:'🔍',text:'EXPLORE: for brand-new people or videos, try it on a few and learn fast.'}],
+        lines:['But CHAOS has one last trick. A brand-new visitor. A brand-new video. Zero history. Zero fingerprints.','If we have no data at all... how do we recommend anything?','Now the mystery hero steps out of hiding: Explore and Exploit.','For things we know well, we EXPLOIT — recommend the safe, proven favorites. For brand-new people and videos, we EXPLORE — show them to a small audience first, and learn fast.','A little curiosity now saves a lot of bad guesses later. CHAOS falls silent.']},
+      {label:'What Beat the Villain', icon:'🏅', heading:'Four Big Ideas', headingColor:'#ffd166',
+        chips:[{icon:'1️⃣',text:'Narrow fast, then look closely — a scout first, a judge second.'},{icon:'2️⃣',text:'Keep one true set of facts, for training and for real life.'},{icon:'3️⃣',text:'Save the expensive stuff for the hard questions.'},{icon:'4️⃣',text:'Never stop listening, and always leave room to explore.'}],
+        lines:['So how do you beat CHAOS? Four ideas.','One: narrow fast, then look closely. A scout first, a judge second.','Two: keep one true set of facts, for training and for real life.','Three: save the expensive stuff for the hard questions.','Four: never stop listening, and always leave room to explore.']},
+      {label:'Pop Quiz · 1 of 3', icon:'❓', heading:'', headingColor:'#e8ecff',
+        quizId:'q1', lines:['A brand-new visitor opens the app. We have zero data on them. What should we do?'],
+        quizOptions:[{text:'Only exploit — show the same favorites everyone else gets',correct:false},{text:'Explore a little — try a few things and learn fast',correct:true},{text:'Ignore them until they watch more videos',correct:false}],
+        correctFeedback:'That\u2019s right! Explore a little. That\u2019s exactly what Explore versus Exploit is for.',
+        wrongFeedback:'Not quite — remember, brand-new people need a little exploring first, so we learn fast.'},
+      {label:'Pop Quiz · 2 of 3', icon:'❓', heading:'', headingColor:'#e8ecff',
+        quizId:'q2', lines:['Comparing every video to every person is far too slow. Which hero fixes this first?'],
+        quizOptions:[{text:'The Judge',correct:false},{text:'The Scout',correct:true},{text:'The Bouncer',correct:false}],
+        correctFeedback:'Yes! The Scout grabs a fast armful, so we\u2019re not comparing everything to everyone.',
+        wrongFeedback:'Not quite — the Scout is the one who narrows things down fast, before anyone looks closely.'},
+      {label:'Pop Quiz · 3 of 3', icon:'❓', heading:'', headingColor:'#e8ecff',
+        quizId:'q3', lines:['Training uses one set of facts, but the real app uses different facts, and predictions get weird. Which hero prevents this?'],
+        quizOptions:[{text:'The Diary',correct:false},{text:'The Shared Notebook',correct:true},{text:'The Budget Keeper',correct:false}],
+        correctFeedback:'Exactly! The Shared Notebook keeps one true set of facts for both training and real life.',
+        wrongFeedback:'Not quite — that mismatch is exactly what the Shared Notebook prevents.'},
+      {label:'The End', icon:'', heading:'', headingColor:'#e8ecff', credits:true,
+        lines:['CHAOS: defeated. And you now know the real answer to a famous interview question: design a recommendation system for millions of people.','Narrow fast, then judge closely. Keep one true notebook of facts. Save the expert for hard questions. Test before you serve. Check it at the door. Keep listening. And always leave room to explore.','Roll credits. See you in the next movie.']},
+    ];
+  }
+
+  componentDidMount(){
+    const load = () => {
+      const vs = (window.speechSynthesis ? window.speechSynthesis.getVoices() : []) || [];
+      this.setState({ voices: vs });
+    };
+    load();
+    if (window.speechSynthesis) window.speechSynthesis.onvoiceschanged = load;
+  }
+
+  componentWillUnmount(){
+    clearTimeout(this._timer);
+    if (window.speechSynthesis) window.speechSynthesis.cancel();
+  }
+
+  speak(text, onDone){
+    clearTimeout(this._timer);
+    if (window.speechSynthesis) window.speechSynthesis.cancel();
+    const extraPause = this.props.extraPauseMs ?? 500;
+    if (window.speechSynthesis && this.state.voices.length){
+      const u = new SpeechSynthesisUtterance(text);
+      const v = this.state.voices.find(v => v.voiceURI === this.state.voiceURI);
+      if (v) u.voice = v;
+      u.rate = 0.9;
+      u.onend = () => { this._timer = setTimeout(onDone, extraPause); };
+      u.onerror = () => { this._timer = setTimeout(onDone, extraPause); };
+      window.speechSynthesis.speak(u);
+    } else {
+      this._timer = setTimeout(onDone, Math.max(1800, text.length * 65) + extraPause);
+    }
+  }
+
+  playCurrent(){
+    const scene = this.SCENES[this.state.sceneIdx];
+    const text = scene.lines[this.state.lineIdx];
+    this.speak(text, () => this.advance());
+  }
+
+  advance(){
+    if (!this.state.playing) return;
+    const scene = this.SCENES[this.state.sceneIdx];
+    if (this.state.lineIdx < scene.lines.length - 1){
+      this.setState(s => ({ lineIdx: s.lineIdx + 1 }), () => this.playCurrent());
+      return;
+    }
+    if (scene.quizId && !this.state.quiz[scene.quizId]){
+      return; // wait for the user to answer
+    }
+    if (this.state.sceneIdx < this.SCENES.length - 1){
+      this.setState(s => ({ sceneIdx: s.sceneIdx + 1, lineIdx: 0 }), () => this.playCurrent());
+    } else {
+      this.setState({ playing: false });
+    }
+  }
+
+  onStart(){
+    this.setState({ started: true, playing: true }, () => this.playCurrent());
+  }
+
+  onPlayPause(){
+    if (this.state.playing){
+      clearTimeout(this._timer);
+      if (window.speechSynthesis) window.speechSynthesis.cancel();
+      this.setState({ playing: false });
+    } else {
+      this.setState({ playing: true }, () => this.playCurrent());
+    }
+  }
+
+  jump(delta){
+    clearTimeout(this._timer);
+    if (window.speechSynthesis) window.speechSynthesis.cancel();
+    const next = Math.max(0, Math.min(this.SCENES.length - 1, this.state.sceneIdx + delta));
+    this.setState({ sceneIdx: next, lineIdx: 0 }, () => { if (this.state.playing) this.playCurrent(); });
+  }
+
+  onRestart(){
+    clearTimeout(this._timer);
+    if (window.speechSynthesis) window.speechSynthesis.cancel();
+    this.setState({ sceneIdx: 0, lineIdx: 0, quiz: {} }, () => { if (this.state.playing) this.playCurrent(); });
+  }
+
+  onVoiceChange(e){ this.setState({ voiceURI: e.target.value }); }
+
+  answerQuiz(quizId, optIndex, opt){
+    this.setState(s => ({ quiz: { ...s.quiz, [quizId]: optIndex } }), () => {
+      const scene = this.SCENES[this.state.sceneIdx];
+      this.speak(opt.correct ? scene.correctFeedback : scene.wrongFeedback, () => this.advance());
+    });
+  }
+
+  renderVals(){
+    const { sceneIdx, lineIdx, voices, voiceURI, playing, quiz } = this.state;
+    const scenes = this.SCENES.map((s, idx) => {
+      const answeredIdx = s.quizId ? quiz[s.quizId] : undefined;
+      const answered = answeredIdx !== undefined;
+      return {
+        idx, active: idx === sceneIdx, label: s.label, icon: s.icon, showIcon: !!s.icon,
+        heading: s.heading, headingColor: s.headingColor, sub: s.sub, chips: s.chips,
+        flow: s.flow ? s.flow.map((n, i) => ({ ...n, arrow: i < s.flow.length - 1 })) : null,
+        credits: !!s.credits,
+        quiz: s.quizId ? {
+          question: s.lines[0], answered,
+          options: s.quizOptions.map((o, i) => {
+            let bg = '#1a2158', border = '#35408f', color = '#e8ecff';
+            if (answered){
+              if (i === answeredIdx && o.correct){ bg = 'rgba(61,220,151,.2)'; border = '#3ddc97'; color = '#3ddc97'; }
+              else if (i === answeredIdx && !o.correct){ bg = 'rgba(255,77,109,.15)'; border = '#ff4d6d'; color = '#ffb3c2'; }
+            }
+            return { text: o.text, bg, border, color, onClick: () => { if (!answered) this.answerQuiz(s.quizId, i, o); } };
+          })
+        } : null,
+      };
+    });
+    const cur = this.SCENES[sceneIdx];
+    return {
+      notStarted: !this.state.started,
+      scenes,
+      currentLabel: cur.label,
+      currentCaption: cur.lines[lineIdx],
+      progressPct: Math.round(((sceneIdx + (lineIdx + 1) / cur.lines.length) / this.SCENES.length) * 100),
+      playPauseLabel: playing ? '⏸ Pause' : '▶ Play',
+      voiceOptions: voices.filter(v => v.lang.startsWith('en')).map(v => ({ voiceURI: v.voiceURI, label: v.name })),
+      voiceURI,
+      onStart: () => this.onStart(),
+      onPlayPause: () => this.onPlayPause(),
+      onPrev: () => this.jump(-1),
+      onNext: () => this.jump(1),
+      onRestart: () => this.onRestart(),
+      onVoiceChange: (e) => this.onVoiceChange(e),
+    };
+  }
+}
+
+</script>
+</body>
+</html>
