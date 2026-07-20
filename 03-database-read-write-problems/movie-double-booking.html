@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>THE DOUBLE BOOKING — A System Design Movie</title>
+<style>
+  :root{
+    --bg:#07091a; --stage:#0d1130; --ink:#e8ecff; --dim:#98a0d4;
+    --red:#ff4d6d; --green:#3ddc97; --gold:#ffd166; --blue:#4dabff; --purple:#b388ff;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%}
+  body{background:var(--bg);color:var(--ink);font-family:"Segoe UI",system-ui,sans-serif;overflow:hidden}
+  #frame{position:fixed;inset:0;display:flex;align-items:center;justify-content:center}
+  #stage{width:960px;height:540px;background:radial-gradient(ellipse at 50% 30%,#141a45 0%,var(--stage) 60%,#080b22 100%);
+    border-radius:10px;position:relative;overflow:hidden;box-shadow:0 0 80px rgba(77,171,255,.15)}
+  #stage::before,#stage::after{content:"";position:absolute;left:0;right:0;height:24px;background:#000;z-index:40}
+  #stage::before{top:0} #stage::after{bottom:0}
+  .scene{position:absolute;inset:0;opacity:0;pointer-events:none;transition:opacity .9s ease;z-index:1}
+  .scene.active{opacity:1;pointer-events:auto;z-index:2}
+  [data-l]{opacity:0;transform:translateY(24px);transition:opacity .8s ease,transform .8s cubic-bezier(.2,1.4,.4,1)}
+  [data-l].shown{opacity:1;transform:none}
+  .pulse {animation:pulse 1.6s ease-in-out infinite}
+  .floaty{animation:floaty 3.2s ease-in-out infinite}
+  .shake {animation:shake .6s linear infinite}
+  .blink {animation:blink 1.2s steps(2) infinite}
+  @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+  @keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+  @keyframes shake{0%,100%{transform:translate(0,0)}25%{transform:translate(-3px,2px)}50%{transform:translate(3px,-2px)}75%{transform:translate(-2px,-2px)}}
+  @keyframes blink{50%{opacity:.25}}
+  body.paused #stage *{animation-play-state:paused !important}
+  .title-xl{font-size:58px;font-weight:900;letter-spacing:4px;text-align:center;
+    background:linear-gradient(180deg,#fff,#6ea8ff);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .subtitle{font-size:19px;color:var(--dim);text-align:center;letter-spacing:5px;text-transform:uppercase}
+  .center{position:absolute;left:50%;top:46%;transform:translate(-50%,-50%);width:100%}
+  .node{position:absolute;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:13px;color:var(--dim)}
+  .node .icon{font-size:46px;line-height:1;filter:drop-shadow(0 4px 10px rgba(0,0,0,.5))}
+  .node .tag{background:#171d4d;border:1px solid #2a3378;border-radius:20px;padding:3px 11px;font-size:11.5px;color:var(--ink)}
+  .meter{width:130px;height:10px;background:#1a2050;border-radius:5px;overflow:hidden;border:1px solid #2a3378}
+  .meter i{display:block;height:100%;background:linear-gradient(90deg,var(--green),var(--gold),var(--red))}
+  .villain{font-size:110px;filter:drop-shadow(0 0 30px rgba(255,77,109,.6))}
+  .villain-name{font-size:30px;font-weight:900;color:var(--red);letter-spacing:6px}
+  .stat{background:rgba(255,77,109,.12);border:1px solid rgba(255,77,109,.5);color:#ffb3c2;border-radius:8px;padding:7px 15px;font-size:15px;font-weight:600}
+  .hero-icon{position:absolute;left:110px;top:135px;font-size:150px;filter:drop-shadow(0 0 34px rgba(77,171,255,.45))}
+  .hero-name{position:absolute;left:340px;top:120px}
+  .hero-name .role{font-size:13px;letter-spacing:4px;color:var(--gold);text-transform:uppercase}
+  .hero-name h2{font-size:40px;font-weight:900;margin-top:2px}
+  .chip{position:absolute;left:340px;width:500px;background:#121741;border:1px solid #2a3378;border-radius:12px;padding:11px 16px;font-size:15.5px;line-height:1.45;color:var(--ink)}
+  .chip b{color:var(--blue)}
+  .chip.analogy{border-color:var(--purple)}
+  .chip.analogy b{color:var(--purple)}
+  .catchphrase{position:absolute;left:110px;top:400px;width:740px;text-align:center;
+    background:linear-gradient(90deg,transparent,rgba(255,209,102,.15),transparent);
+    border-top:1px solid rgba(255,209,102,.5);border-bottom:1px solid rgba(255,209,102,.5);
+    padding:11px;font-size:20px;font-weight:800;color:var(--gold);letter-spacing:1px}
+  .card{position:absolute;width:150px;background:#121741;border:1px solid #2a3378;border-radius:12px;padding:12px 10px;text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+  .card .icon{font-size:32px}
+  .card h4{font-size:12.5px;margin:5px 0 2px;color:var(--ink)}
+  .card p{font-size:10px;color:var(--dim);line-height:1.3}
+  .arrow{position:absolute;height:2px;background:linear-gradient(90deg,transparent,var(--blue));transform-origin:left center}
+  .q-block{position:absolute;left:120px;width:720px;background:#121741;border:1px solid #2a3378;border-radius:14px;padding:16px 20px}
+  .q-block h3{font-size:16.5px;margin-bottom:10px}
+  .q-block .opts{display:flex;gap:10px;flex-wrap:wrap}
+  .q-block button{background:#1a2158;border:1px solid #35408f;color:var(--ink);border-radius:9px;padding:9px 14px;font-size:13.5px;cursor:pointer}
+  .q-block button:hover{background:#232c74}
+  .q-block button.right{background:rgba(61,220,151,.2);border-color:var(--green);color:var(--green)}
+  .q-block button.wrong{background:rgba(255,77,109,.15);border-color:var(--red);color:#ffb3c2;animation:shake .4s linear 2}
+  .q-block button:disabled{cursor:default;opacity:.85}
+  .credit-roll{position:absolute;left:0;right:0;text-align:center;font-size:15px;line-height:2.05;color:var(--dim)}
+  .scene.active .credit-roll{animation:roll 34s linear both}
+  @keyframes roll{from{top:540px}to{top:-700px}}
+  .credit-roll b{color:var(--ink)} .credit-roll .cast{color:var(--gold)}
+  #captionBar{position:absolute;left:0;right:0;bottom:32px;z-index:50;text-align:center;padding:0 50px}
+  #caption{display:inline-block;background:rgba(0,0,0,.7);border-radius:8px;padding:9px 18px;font-size:17.5px;line-height:1.5;max-width:840px;transition:opacity .25s}
+  #sceneTitle{position:absolute;top:34px;left:0;right:0;text-align:center;z-index:50;font-size:12px;letter-spacing:4px;color:var(--gold);text-transform:uppercase}
+  #controls{display:flex;align-items:center;gap:12px;justify-content:center;margin-top:14px;color:var(--dim);font-size:13px}
+  #controls button{background:#141a45;border:1px solid #2a3378;color:var(--ink);border-radius:8px;padding:7px 15px;font-size:14px;cursor:pointer}
+  #controls button:hover{background:#1d2560}
+  #controls select{background:#141a45;border:1px solid #2a3378;color:var(--ink);border-radius:8px;padding:7px;font-size:13px;max-width:260px}
+  #progress{width:260px;height:6px;background:#141a45;border-radius:3px;overflow:hidden;border:1px solid #2a3378}
+  #progress i{display:block;height:100%;background:var(--blue);width:0%;transition:width .5s}
+  #overlay{position:absolute;inset:0;z-index:100;background:rgba(4,6,20,.92);display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:18px;text-align:center}
+  #overlay h1{font-size:40px;font-weight:900;letter-spacing:3px}
+  #overlay p{color:var(--dim);max-width:540px;line-height:1.6;font-size:15px}
+  #btnStart{background:linear-gradient(135deg,#2b6cb0,#4dabff);border:none;color:#fff;font-size:20px;font-weight:700;
+    padding:14px 42px;border-radius:40px;cursor:pointer;box-shadow:0 8px 30px rgba(77,171,255,.4)}
+  #btnStart:hover{transform:scale(1.05)}
+</style>
+</head>
+<body>
+<div id="frame"><div id="stageWrap">
+<div id="stage">
+  <div id="sceneTitle"></div>
+
+  <div id="overlay">
+    <h1>🎬 THE DOUBLE BOOKING</h1>
+    <p>Episode 03 of the System Design Saga — starring the villain <b style="color:var(--red)">THE RACE CONDITION</b>
+       and six heroes who never sell a seat twice.<br><br>🔊 Turn your sound on!<br>
+       <span style="font-size:13px;color:var(--gold)">🎙️ Best narrator: <b>Google UK English Female</b> (Chrome) or a ⭐ “Natural” voice (Edge) — pick it in the dropdown below the screen.</span></p>
+    <button id="btnStart">▶ Start the Movie</button>
+  </div>
+
+  <!-- S0 TITLE -->
+  <section class="scene" id="s0">
+    <div class="center">
+      <div class="subtitle" data-l="0">InterviewPrep Pictures presents</div>
+      <div class="title-xl" data-l="0">THE DOUBLE BOOKING</div>
+      <div class="subtitle" data-l="1">episode 03 · when two writes want one row</div>
+    </div>
+  </section>
+
+  <!-- S1 PEACEFUL -->
+  <section class="scene" id="s1">
+    <div class="node" data-l="0" style="left:390px;top:170px"><div class="icon floaty">🏟️</div><div class="tag">SeatShack · 100 seats · sleepy</div></div>
+    <div class="node" data-l="1" style="left:190px;top:280px"><div class="icon">🙂</div><div class="tag">Alice wants seat 12</div></div>
+    <div class="arrow" data-l="1" style="left:280px;top:315px;width:110px"></div>
+    <div class="node" data-l="2" style="left:420px;top:300px"><div class="icon">💺</div><div class="tag">is it free? yes → SOLD ✅</div></div>
+    <div class="node" data-l="2" style="left:650px;top:290px"><div class="meter"><i style="width:8%"></i></div><div class="tag">database effort: 8%</div></div>
+    <div class="node" data-l="3" style="left:640px;top:150px"><div class="icon">🎸</div><div class="tag">breaking news: THE band is coming</div></div>
+  </section>
+
+  <!-- S2 VILLAIN -->
+  <section class="scene" id="s2">
+    <div class="center" style="top:40%">
+      <div style="text-align:center" data-l="0"><span class="villain pulse">👯</span></div>
+      <div class="villain-name" data-l="0" style="text-align:center">THE RACE CONDITION</div>
+    </div>
+    <div class="stat" data-l="1" style="position:absolute;left:110px;top:120px">two clicks · 3 milliseconds apart</div>
+    <div class="stat" data-l="2" style="position:absolute;right:110px;top:120px">500,000 fans · one on-sale second</div>
+    <div class="stat" data-l="3" style="position:absolute;left:110px;top:395px">seat 12: “free”... twice</div>
+    <div class="stat" data-l="3" style="position:absolute;right:110px;top:395px">no hack. no bug. just a gap.</div>
+  </section>
+
+  <!-- S3 THE FALL -->
+  <section class="scene" id="s3">
+    <div class="node" data-l="0" style="left:180px;top:170px"><div class="icon">🙂</div><div class="tag">Fan A: seat 12 free? YES</div></div>
+    <div class="node" data-l="0" style="left:180px;top:320px"><div class="icon">🙃</div><div class="tag">Fan B (3ms later): free? ALSO YES</div></div>
+    <div class="node" data-l="1" style="left:470px;top:240px"><div class="icon pulse">💺</div><div class="tag blink" style="color:var(--red)">seat 12 — sold TWICE</div></div>
+    <div class="node" data-l="2" style="left:690px;top:180px"><div class="icon shake">💥</div><div class="tag" style="color:var(--red)">hundreds of double bookings</div></div>
+    <div class="node" data-l="2" style="left:690px;top:330px"><div class="icon">😡😡</div><div class="tag" style="color:var(--red)">refunds · rage · the news</div></div>
+    <div data-l="2" style="position:absolute;right:70px;top:100px"><span class="pulse" style="font-size:70px">👯</span></div>
+  </section>
+
+  <!-- S4 LOCKY -->
+  <section class="scene" id="s4">
+    <div class="hero-icon floaty" data-l="0">🚪</div>
+    <div class="hero-name" data-l="0"><div class="role">Hero #1 · The Bouncer</div><h2>Locky</h2></div>
+    <div class="chip analogy" data-l="1" style="top:210px"><b>Imagine:</b> a fitting room with one door. You step in, Locky locks it and stands guard. Everyone else waits outside — nobody ends up wearing the same pants at the same time.</div>
+    <div class="chip" data-l="2" style="top:300px"><b>Superpower:</b> <b>pessimistic locking</b> — SELECT the seat's row FOR UPDATE and hold it until you're done. Totally safe. But if a million people want the same door, the line gets long.</div>
+    <div class="catchphrase" data-l="3">“One at a time — I hold the door.”</div>
+  </section>
+
+  <!-- S5 VERSA -->
+  <section class="scene" id="s5">
+    <div class="hero-icon floaty" data-l="0">🏷️</div>
+    <div class="hero-name" data-l="0"><div class="role">Hero #2 · The Sticker Checker</div><h2>Versa</h2></div>
+    <div class="chip analogy" data-l="1" style="top:210px"><b>Imagine:</b> a garage sale. Anyone can grab the robot toy — no lines. But at checkout, the clerk compares your sticker number to the master list. Someone bought it while you wandered? Your number is old. Back you go.</div>
+    <div class="chip" data-l="2" style="top:300px"><b>Superpower:</b> <b>optimistic locking</b> — every row carries a version number. Save only succeeds if the version hasn't changed; otherwise, retry. No waiting lines. Perfect when clashes are rare.</div>
+    <div class="catchphrase" data-l="3">“Check the number — if it changed, try again.”</div>
+  </section>
+
+  <!-- S6 HOLDY -->
+  <section class="scene" id="s6">
+    <div class="hero-icon floaty" data-l="0">⏳</div>
+    <div class="hero-name" data-l="0"><div class="role">Hero #3 · The Seat Saver</div><h2>Holdy</h2></div>
+    <div class="chip analogy" data-l="1" style="top:210px"><b>Imagine:</b> your friend drops a jacket on a seat — saved! But not forever. If you're not back when the lights go down, the jacket comes off and the seat is anyone's.</div>
+    <div class="chip" data-l="2" style="top:300px"><b>Superpower:</b> the <b>reservation pattern</b> — click a seat and it's HELD for ten minutes while you calmly pay. Pay in time, it's yours; miss it, the hold expires and the seat goes back on sale. The real ticket-site answer.</div>
+    <div class="catchphrase" data-l="3">“Ten minutes. Pay up, or the seat goes back.”</div>
+  </section>
+
+  <!-- S7 ECHO -->
+  <section class="scene" id="s7">
+    <div class="hero-icon floaty" data-l="0">🧾</div>
+    <div class="hero-name" data-l="0"><div class="role">Hero #4 · The Receipt Keeper</div><h2>Echo</h2></div>
+    <div class="chip analogy" data-l="1" style="top:210px"><b>Imagine:</b> you order pizza #42, the line glitches, and you nervously call again. Does the shop make two pizzas? No — they check the order number and say “already in the oven.”</div>
+    <div class="chip" data-l="2" style="top:300px"><b>Superpower:</b> <b>idempotency keys</b> — every payment carries a unique key. If the same key arrives twice (a retry, a double-tap), the server returns the SAME receipt instead of charging again. Retries become harmless.</div>
+    <div class="catchphrase" data-l="3">“Ask me twice — I answer once.”</div>
+  </section>
+
+  <!-- S8 LOGGY -->
+  <section class="scene" id="s8">
+    <div class="hero-icon floaty" data-l="0">📓</div>
+    <div class="hero-name" data-l="0"><div class="role">Hero #5 · The Diary Keeper</div><h2>Loggy</h2></div>
+    <div class="chip analogy" data-l="1" style="top:210px"><b>Imagine:</b> a chef clips the order ticket to the rail BEFORE cooking. Power blinks, kitchen forgets everything — the tickets are still on the rail. Nothing is lost; just cook down the list.</div>
+    <div class="chip" data-l="2" style="top:300px"><b>Superpower:</b> the <b>write-ahead log</b> — before changing anything, append the plan to a diary on disk: “sell seat 12 to Alice.” Crash mid-way? Replay the diary on restart. Hidden inside almost every database on Earth.</div>
+    <div class="catchphrase" data-l="3">“Write it down first — then do it.”</div>
+  </section>
+
+  <!-- S9 MIRROR -->
+  <section class="scene" id="s9">
+    <div class="hero-icon floaty" data-l="0">🪞</div>
+    <div class="hero-name" data-l="0"><div class="role">Hero #6 · The Copycat</div><h2>Mirror</h2></div>
+    <div class="chip analogy" data-l="1" style="top:210px"><b>Imagine:</b> the teacher writes on the front board; helpers copy it onto boards all around the room so five hundred kids can read without crowding one wall. The copies run a moment behind.</div>
+    <div class="chip" data-l="2" style="top:300px"><b>Superpower:</b> <b>leader-follower replication</b> — all writes go to one leader; copies flow to many followers, and millions read the seat map from the copies. Careful: a copy can be a second stale — read your OWN purchase from the leader.</div>
+    <div class="catchphrase" data-l="3">“One writes, many read — copies run a step behind.”</div>
+  </section>
+
+  <!-- S10 ROLL CALL -->
+  <section class="scene" id="s10">
+    <div class="card" data-l="0" style="left:55px;top:130px"><div class="icon">🚪</div><h4>Locky</h4><p>holds the door</p></div>
+    <div class="card" data-l="0" style="left:225px;top:130px"><div class="icon">🏷️</div><h4>Versa</h4><p>checks the sticker</p></div>
+    <div class="card" data-l="1" style="left:395px;top:130px"><div class="icon">⏳</div><h4>Holdy</h4><p>ten-minute jacket</p></div>
+    <div class="card" data-l="1" style="left:565px;top:130px"><div class="icon">🧾</div><h4>Echo</h4><p>one key, one charge</p></div>
+    <div class="card" data-l="2" style="left:735px;top:130px"><div class="icon">📓</div><h4>Loggy</h4><p>diary before action</p></div>
+    <div class="card" data-l="2" style="left:225px;top:300px"><div class="icon">🪞</div><h4>Mirror</h4><p>copies for millions</p></div>
+    <div class="card" data-l="3" style="left:395px;top:300px;border-color:var(--gold)"><div class="icon">❓</div><h4>Mystery Hero</h4><p>appears in the finale...</p></div>
+  </section>
+
+  <!-- S11 ASSEMBLY -->
+  <section class="scene" id="s11">
+    <div class="node" data-l="0" style="left:35px;top:225px"><div class="icon">🙂</div><div class="tag">fan taps seat 12</div></div>
+    <div class="node" data-l="1" style="left:185px;top:225px"><div class="icon">🏷️🚪</div><div class="tag">Versa/Locky guard the row</div></div>
+    <div class="arrow" data-l="1" style="left:110px;top:258px;width:70px"></div>
+    <div class="node" data-l="2" style="left:370px;top:140px"><div class="icon">⏳</div><div class="tag">Holdy: HELD · 10 min</div></div>
+    <div class="arrow" data-l="2" style="left:280px;top:220px;width:95px;transform:rotate(-25deg)"></div>
+    <div class="node" data-l="3" style="left:370px;top:310px"><div class="icon">💳</div><div class="tag">payment + Echo's key</div></div>
+    <div class="arrow" data-l="3" style="left:280px;top:290px;width:95px;transform:rotate(25deg)"></div>
+    <div class="node" data-l="4" style="left:545px;top:310px"><div class="icon">📓</div><div class="tag">Loggy writes every step</div></div>
+    <div class="arrow" data-l="4" style="left:465px;top:345px;width:75px"></div>
+    <div class="node" data-l="4" style="left:700px;top:225px"><div class="icon">💺</div><div class="tag">seat 12: sold exactly once</div></div>
+    <div class="arrow" data-l="4" style="left:625px;top:300px;width:80px;transform:rotate(-25deg)"></div>
+    <div class="node" data-l="5" style="left:855px;top:225px"><div class="icon">🪞</div><div class="tag">Mirror → 500k screens</div></div>
+    <div class="arrow" data-l="5" style="left:790px;top:258px;width:60px"></div>
+    <div class="node" data-l="5" style="left:545px;top:140px"><div class="icon">👯</div><div class="tag" style="color:var(--red)">no gap to slip through</div></div>
+  </section>
+
+  <!-- S12 CLIMAX -->
+  <section class="scene" id="s12">
+    <div class="node" data-l="0" style="left:70px;top:150px"><div class="icon">💳</div><div class="tag">payment service: PAID ✅</div></div>
+    <div class="node" data-l="1" style="left:70px;top:300px"><div class="icon shake">💺</div><div class="tag blink" style="color:var(--red)">seat service: CRASHED ✖</div></div>
+    <div class="chip" data-l="2" style="left:280px;top:130px;width:300px;font-size:13.5px"><b>The villain's last move:</b> two different systems. Money taken... seat never confirmed. No single lock can span them.</div>
+    <div class="card" data-l="3" style="left:640px;top:110px;width:200px;border-color:var(--gold)">
+      <div class="icon">🎭</div><h4 style="color:var(--gold)">The Mystery Hero:<br>Madame Saga</h4>
+      <p style="font-size:11px">every step gets an undo</p>
+    </div>
+    <div class="chip" data-l="4" style="left:280px;top:255px;width:300px;font-size:13.5px"><b>Saga's script:</b> hold seat → take money → confirm. Any step fails? Run the undos backward: refund, release, done.</div>
+    <div class="node" data-l="5" style="left:660px;top:330px"><div class="icon">↩️💰</div><div class="tag">auto-refund in seconds</div></div>
+    <div class="node" data-l="6" style="left:840px;top:420px"><div class="icon">🏆</div><div class="tag">race: defeated ✅</div></div>
+  </section>
+
+  <!-- S13 LESSONS -->
+  <section class="scene" id="s13">
+    <div class="subtitle" data-l="0" style="position:absolute;top:70px;left:0;right:0">what beat the race</div>
+    <div class="chip" data-l="1" style="left:200px;top:130px;width:560px;text-align:center"><b>1. Never trust check-then-act.</b> The world changes in the gap — lock or version the row.</div>
+    <div class="chip" data-l="2" style="left:200px;top:205px;width:560px;text-align:center"><b>2. Humans are slow — hold, don't lock.</b> Timed reservations let people pay calmly.</div>
+    <div class="chip" data-l="3" style="left:200px;top:280px;width:560px;text-align:center"><b>3. Retries WILL happen.</b> Idempotency keys make asking twice safe.</div>
+    <div class="chip" data-l="4" style="left:200px;top:355px;width:560px;text-align:center;border-color:var(--gold)"><b style="color:var(--gold)">4. Log first, undo across systems.</b> Diaries and sagas make crashes boring.</div>
+  </section>
+
+  <!-- S14 QUIZ -->
+  <section class="scene" id="s14">
+    <div class="q-block" data-l="0" style="top:60px">
+      <h3>1️⃣ Two fans tap the SAME seat in the same millisecond. Who guards the row?</h3>
+      <div class="opts">
+        <button onclick="answer(this,false)">🪞 Mirror</button>
+        <button onclick="answer(this,true)">🚪 Locky</button>
+        <button onclick="answer(this,false)">⏳ Holdy</button>
+      </div>
+    </div>
+    <div class="q-block" data-l="1" style="top:205px">
+      <h3>2️⃣ Your phone glitches and sends the payment TWICE. Why is there only one charge?</h3>
+      <div class="opts">
+        <button onclick="answer(this,false)">The bank felt generous</button>
+        <button onclick="answer(this,true)">🧾 Echo — same key, same receipt, one charge</button>
+        <button onclick="answer(this,false)">📓 Loggy erased one</button>
+      </div>
+    </div>
+    <div class="q-block" data-l="2" style="top:350px">
+      <h3>3️⃣ Clashes almost never happen on your site — and you hate waiting lines. Your hero?</h3>
+      <div class="opts">
+        <button onclick="answer(this,false)">🚪 Locky — lock everything anyway</button>
+        <button onclick="answer(this,true)">🏷️ Versa — versions, retry on clash</button>
+        <button onclick="answer(this,false)">🪞 Mirror — more copies</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- S15 CREDITS -->
+  <section class="scene" id="s15">
+    <div class="credit-roll">
+      <div style="font-size:26px;font-weight:900;color:var(--ink);letter-spacing:3px">THE DOUBLE BOOKING</div>
+      <div style="color:var(--green);font-weight:700">500,000 fans. Every seat sold exactly once. The race found no gap.</div>
+      <br><b>— CAST —</b><br>
+      <span class="cast">Locky</span> as The Bouncer (pessimistic locking)<br>
+      <span class="cast">Versa</span> as The Sticker Checker (optimistic locking)<br>
+      <span class="cast">Holdy</span> as The Seat Saver (reservation pattern)<br>
+      <span class="cast">Echo</span> as The Receipt Keeper (idempotency keys)<br>
+      <span class="cast">Loggy</span> as The Diary Keeper (write-ahead log)<br>
+      <span class="cast">Mirror</span> as The Copycat (leader-follower replication)<br>
+      <span class="cast">Madame Saga</span> as The Mystery Hero (the saga pattern)<br>
+      <br><b>— REMEMBER THE CATCHPHRASES —</b><br>
+      “One at a time — I hold the door.”<br>
+      “Check the number — if it changed, try again.”<br>
+      “Ten minutes. Pay up, or the seat goes back.”<br>
+      “Ask me twice — I answer once.”<br>
+      “Write it down first — then do it.”<br>
+      “One writes, many read — copies run a step behind.”<br>
+      <br><i>Next showing: 04 — The Hallucination 🤖</i>
+    </div>
+  </section>
+
+  <div id="captionBar"><span id="caption"></span></div>
+</div>
+<div id="controls">
+  <button id="btnRestart">⟲ Restart</button>
+  <button id="btnPrev">⏮ Prev</button>
+  <button id="btnPlay">⏸ Pause</button>
+  <button id="btnNext">Next ⏭</button>
+  <button id="btnMute">🔊 Voice on</button>
+  <select id="voiceSel" title="Narrator voice"></select>
+  <div id="progress"><i></i></div>
+  <span id="sceneNum"></span>
+</div>
+</div></div>
+
+<script>
+const scenes=[
+ {el:"s0",title:"",lines:[
+   "Welcome back to the saga. Episode three.",
+   "Last time, the data was too big. This time, the data is tiny... but two people want the same piece of it, at the exact same moment."]},
+ {el:"s1",title:"Act One · A Sleepy Ticket Site",lines:[
+   "Meet SeatShack, your little ticket website. A hundred seats, a handful of fans.",
+   "Alice wants seat twelve. The site checks: is it free? Yes. Sold to Alice. Easy.",
+   "One buyer at a time, nice and slow. The database barely wakes up.",
+   "Then your venue books... THE most famous band on Earth. Tickets go on sale Friday at noon."]},
+ {el:"s2",title:"Act One · Enter the Villain",lines:[
+   "Friday. Eleven fifty-nine. Half a million fans hover over the buy button. And hiding between their clicks... THE RACE CONDITION.",
+   "It doesn't hack anything. It doesn't break anything. It just needs two requests... a few milliseconds apart.",
+   "Fan A asks: is seat twelve free? Yes. Fan B asks, three milliseconds later: is seat twelve free? ...Also yes.",
+   "Both pay. Both get a confirmation. Two tickets. One seat. And on Friday night, two very angry fans."]},
+ {el:"s3",title:"Act One · The Disaster",lines:[
+   "Noon strikes. The clicks flood in. Check, then buy. Check, then buy. Thousands of times every second.",
+   "The checks overlap. Hundreds of seats sell twice. Some sell three times.",
+   "Refunds. Rage. The news calls it the double-booking disaster. And here's the secret of this episode: the bug isn't in the checking, or in the buying. It's in the GAP between them. Meet the six heroes who close that gap."]},
+ {el:"s4",title:"Act Two · Hero 1 of 6",lines:[
+   "Hero number one: Locky. The Bouncer.",
+   "Think of a fitting room with one door. When you step in, Locky locks it and stands guard. Everyone else waits in line outside — so nobody ends up wearing the same pants at the same time.",
+   "Locky does this to database rows. It's called pessimistic locking. SELECT the seat FOR UPDATE, and the row is yours until you finish. Nobody else can touch it. Totally safe... but if a million people want the same door, the line gets very, very long. Say that trade-off out loud in interviews.",
+   "Locky's catchphrase: one at a time — I hold the door."]},
+ {el:"s5",title:"Act Two · Hero 2 of 6",lines:[
+   "Hero number two: Versa. The Sticker Checker.",
+   "Picture a garage sale. Anyone can pick up the robot toy — no lines, no guards. But at checkout, the clerk compares your sticker number to the master list. If somebody bought it while you wandered around, your number is old. Back you go.",
+   "That's optimistic locking. Every row carries a version number. When you save, the database checks: is the version still what you saw? If yes — done, and the number ticks up. If no — someone beat you, so you try again. No waiting lines. Perfect when clashes are rare.",
+   "Versa's catchphrase: check the number — if it changed, try again."]},
+ {el:"s6",title:"Act Two · Hero 3 of 6",lines:[
+   "Hero number three: Holdy. The Seat Saver.",
+   "Your friend drops a jacket on a seat: saved! But not forever. If you're not back when the lights go down, the jacket comes off, and the seat belongs to whoever's fastest.",
+   "Holdy runs the reservation pattern. Click a seat and it's HELD for you — ten minutes — while you calmly type your card number. Pay in time, it's yours. Miss it, and the hold expires and the seat goes back on sale. This is exactly how the big ticket sites do it.",
+   "Holdy's catchphrase: ten minutes. Pay up, or the seat goes back."]},
+ {el:"s7",title:"Act Two · Hero 4 of 6",lines:[
+   "Hero number four: Echo. The Receipt Keeper.",
+   "You order pizza number forty-two. The line glitches, so you nervously call again: order forty-two, please! Does the shop make two pizzas? No. They check the number and say: already in the oven.",
+   "Echo gives every payment a unique idempotency key. If the same key arrives twice — because your app retried, or you double-tapped — the server recognizes it and returns the SAME receipt, instead of charging again. Retries become completely harmless. This is THE payment-system tool.",
+   "Echo's catchphrase: ask me twice — I answer once."]},
+ {el:"s8",title:"Act Two · Hero 5 of 6",lines:[
+   "Hero number five: Loggy. The Diary Keeper.",
+   "A chef clips the order ticket to the rail BEFORE cooking. If the power blinks and the kitchen forgets everything... the tickets are still on the rail. Nothing is lost. Just cook down the list.",
+   "Loggy is the write-ahead log. Before the database changes anything, it appends the plan to a simple diary on disk: sell seat twelve to Alice. Crash in the middle? On restart, replay the diary. This one quiet trick hides inside almost every database on Earth.",
+   "Loggy's catchphrase: write it down first — then do it."]},
+ {el:"s9",title:"Act Two · Hero 6 of 6",lines:[
+   "Our final hero: Mirror. The Copycat.",
+   "The teacher writes on the front board. Helpers copy it onto boards all around the room, so five hundred kids can read without crowding one wall. The copies run just a moment behind.",
+   "Mirror is leader-follower replication. ALL writes go to one leader database. Copies flow out to many followers, and millions of fans read the seat map from the copies. One warning: a copy can be a second stale — so right after YOU buy, read your own seat from the leader, or you'll see it free and panic.",
+   "Mirror's catchphrase: one writes, many read — copies run a step behind."]},
+ {el:"s10",title:"Act Two · Roll Call",lines:[
+   "The team, together. Locky guards the door. Versa checks the sticker.",
+   "Holdy saves seats with a ten-minute jacket. Echo keeps every receipt.",
+   "Loggy writes the plan before the action. Mirror copies the seat map out to millions.",
+   "And one mystery hero waits in the wings. When a story runs across many stages... you need a director."]},
+ {el:"s11",title:"Act Three · The Machine",lines:[
+   "Friday, noon. Round two. Watch the machine work.",
+   "A fan taps seat twelve. Versa stamps the row's version — and for the very hottest seats, Locky holds the door.",
+   "Holdy marks the seat HELD, ten minutes, and the fan types their card in peace.",
+   "The payment flies out wearing Echo's key. Tap twice, charge once.",
+   "Loggy writes every step in the diary before it happens. Confirmed: seat twelve, sold exactly once.",
+   "And Mirror fans the fresh seat map out to half a million screens. No line. No double booking. The Race Condition circles the machine... and finds no gap to slip through."]},
+ {el:"s12",title:"Act Three · The Final Battle",lines:[
+   "But the villain has one move left. The seat service and the payment service are two DIFFERENT systems.",
+   "At the worst possible moment — money taken, seat NOT yet confirmed — the seat service crashes. A fan has paid for nothing. And no single lock can span two systems.",
+   "The Race Condition grins. And a spotlight snaps on.",
+   "Madame Saga steps out of the wings. The mystery hero. She breaks the big promise into small steps — hold the seat, take the money, confirm — and gives EVERY step an undo.",
+   "Payment done, but seat lost? She runs the undos backward: refund issued, hold released. Automatically. There are no half-finished stories on her stage.",
+   "The fan gets their money back in seconds and grabs another seat. The Race Condition — out of gaps, out of tricks — defeated. Roll the lessons."]},
+ {el:"s13",title:"What Beat the Race",lines:[
+   "How do you beat a villain made of milliseconds? Four ideas.",
+   "One: never trust check-then-act. Between the check and the act, the world changes. Lock the row, or version it.",
+   "Two: humans are slow, so hold — don't lock. A timed reservation lets people pay calmly without freezing the database.",
+   "Three: retries WILL happen. Idempotency keys make asking twice as safe as asking once.",
+   "And four: write the intent first, and give every multi-step story an undo. Diaries and sagas turn crashes into non-events."]},
+ {el:"s14",title:"Pop Quiz!",interactive:true,lines:[
+   "Pop quiz! Question one: two fans tap the SAME seat in the same millisecond, and only one may win the row. Who guards the door? Click your answer.",
+   "Question two: your phone glitches and sends the payment twice. Why is there only ONE charge?",
+   "Last one. On your quiet little site, clashes almost never happen — and you hate waiting lines. Who's your hero?"]},
+ {el:"s15",title:"The End",lines:[
+   "And that's the famous double-booking question — concert seats, airline seats, the last item in stock. You don't out-click the race. You close the gap.",
+   "Lock or version the row. Hold, then confirm. Key every retry. Log first. And give every big story an undo.",
+   "Roll credits. Episode four: an AI that answers everything... including things that aren't true. The Hallucination."]}
+];
+
+let si=0, li=-1, playing=false, voiceOn=true, lineTimer=null, chosenVoice=null, waitingAnswer=false;
+const $=id=>document.getElementById(id);
+const synth=window.speechSynthesis||null;
+function rankVoice(v){
+  const n=v.name.toLowerCase();
+  if(/natural|neural/.test(n))return 0;
+  if(/google uk english female/.test(n))return 1;
+  if(/online/.test(n))return 2;
+  if(/google/.test(n))return 3;
+  if(/aria|jenny|guy|sonia|libby|zira|david|mark|samantha/.test(n))return 4;
+  return 5;
+}
+function pickVoice(){
+  if(!synth)return;
+  const vs=synth.getVoices().filter(v=>/^en/i.test(v.lang)).sort((a,b)=>rankVoice(a)-rankVoice(b));
+  const sel=$("voiceSel");
+  if(vs.length&&sel.options.length!==vs.length){
+    sel.innerHTML=vs.map((v,i)=>`<option value="${i}">${rankVoice(v)<2?"⭐ ":""}${v.name.replace(/Microsoft |Online |\(Natural\)/g,"").trim()}</option>`).join("");
+    sel.onchange=()=>{chosenVoice=vs[+sel.value]; if(playing)replayLine();};
+  }
+  chosenVoice=vs[sel&&sel.value?+sel.value:0]||null;
+}
+if(synth){pickVoice(); synth.onvoiceschanged=pickVoice;}
+function styleFor(text){
+  let rate=1.0,pitch=1.0;
+  if(/catchphrase/i.test(text)){rate=0.9;pitch=1.12;}
+  else if(/RACE CONDITION|villain|crashes|disaster|rage|angry|grins|sold TWICE/i.test(text)){rate=0.93;pitch=0.86;}
+  else if(/pop quiz|correct|exactly|yes!/i.test(text)){rate=1.02;pitch=1.1;}
+  else if(/\?$/.test(text)){pitch=1.06;}
+  return{rate,pitch};
+}
+function estMs(text){return Math.max(3200, text.split(/\s+/).length*430);}
+function speak(text,done){
+  clearTimeout(lineTimer);
+  if(voiceOn&&synth){
+    synth.cancel();
+    const u=new SpeechSynthesisUtterance(text.replace(/[🚪🏷️⏳🧾📓🪞🎭👯🎟️💺💳🏟️💥⚡🏆🙂🙃😡🎸↩️💰]/g,"").replace(/ — /g,", "));
+    if(chosenVoice)u.voice=chosenVoice;
+    const st=styleFor(text);
+    u.rate=st.rate; u.pitch=st.pitch;
+    let called=false; const fin=()=>{if(!called){called=true;done();}};
+    u.onend=fin; u.onerror=fin;
+    lineTimer=setTimeout(fin, estMs(text)+9000);
+    synth.speak(u);
+  }else{
+    lineTimer=setTimeout(done, estMs(text));
+  }
+}
+function reveal(){
+  const scEl=$(scenes[si].el);
+  scEl.querySelectorAll("[data-l]").forEach(e=>{
+    e.classList.toggle("shown", +e.dataset.l<=li);
+  });
+}
+function goScene(i){
+  if(synth)synth.cancel();
+  clearTimeout(lineTimer);
+  si=Math.max(0,Math.min(scenes.length-1,i));
+  li=-1; waitingAnswer=false;
+  document.querySelectorAll(".scene").forEach(s=>s.classList.remove("active"));
+  const scEl=$(scenes[si].el);
+  scEl.querySelectorAll("[data-l]").forEach(e=>e.classList.remove("shown"));
+  void scEl.offsetWidth;
+  scEl.classList.add("active");
+  $("sceneTitle").textContent=scenes[si].title;
+  $("sceneNum").textContent="scene "+(si+1)+" / "+scenes.length;
+  document.querySelector("#progress i").style.width=(si/(scenes.length-1)*100)+"%";
+  $("caption").textContent="";
+  if(playing)nextLine();
+}
+function nextLine(){
+  const sc=scenes[si];
+  li++;
+  if(li>=sc.lines.length){
+    if(si<scenes.length-1) goScene(si+1);
+    else { setPlay(false); $("btnPlay").textContent="⟲ Watch again"; }
+    return;
+  }
+  reveal();
+  const text=sc.lines[li];
+  const cap=$("caption");
+  cap.style.opacity=0;
+  setTimeout(()=>{cap.textContent=text;cap.style.opacity=1;},200);
+  speak(text,()=>{
+    if(!playing)return;
+    if(sc.interactive){ waitingAnswer=true; return; }
+    setTimeout(()=>{if(playing)nextLine();},900);
+  });
+}
+function replayLine(){ li--; nextLine(); }
+function setPlay(p){
+  playing=p;
+  $("btnPlay").textContent=p?"⏸ Pause":"▶ Play";
+  document.body.classList.toggle("paused",!p);
+  if(!p){ if(synth)synth.cancel(); clearTimeout(lineTimer); }
+}
+function answer(btn,correct){
+  if(correct){
+    btn.classList.add("right");
+    btn.parentElement.querySelectorAll("button").forEach(b=>b.disabled=true);
+    waitingAnswer=false;
+    const praise=["Correct! Locky the Bouncer — one at a time, he holds the door.","Exactly! Echo's idempotency key — ask twice, answer once, charge once.","Yes! Versa's optimistic locking — no lines, just check the version and retry. You're ready for the interview."];
+    speak(praise[Math.min(li,praise.length-1)],()=>{ if(playing)setTimeout(nextLine,700); });
+  }else{
+    btn.classList.add("wrong");
+    setTimeout(()=>btn.classList.remove("wrong"),900);
+    speak("Hmm, not that one. Think about the catchphrases... try again!",()=>{});
+  }
+}
+$("btnStart").onclick=()=>{
+  $("overlay").style.display="none";
+  playing=true;
+  if(synth){synth.cancel();pickVoice();}
+  goScene(0);
+};
+$("btnPlay").onclick=()=>{
+  if(!playing){
+    setPlay(true);
+    if(si===scenes.length-1&&li>=scenes[si].lines.length) goScene(0);
+    else replayLine();
+  } else setPlay(false);
+};
+$("btnNext").onclick=()=>{const wasPlaying=playing;playing=true;goScene(si+1);if(!wasPlaying)setPlay(true);};
+$("btnPrev").onclick=()=>{const wasPlaying=playing;playing=true;goScene(si-1);if(!wasPlaying)setPlay(true);};
+$("btnRestart").onclick=()=>{playing=true;setPlay(true);goScene(0);};
+$("btnMute").onclick=()=>{
+  voiceOn=!voiceOn;
+  $("btnMute").textContent=voiceOn?"🔊 Voice on":"🔇 Voice off";
+  if(!voiceOn&&synth)synth.cancel();
+  if(playing)replayLine();
+};
+document.addEventListener("keydown",e=>{
+  if($("overlay").style.display==="none"){
+    if(e.key===" "){e.preventDefault();$("btnPlay").click();}
+    if(e.key==="ArrowRight")$("btnNext").click();
+    if(e.key==="ArrowLeft")$("btnPrev").click();
+  }
+});
+function fit(){
+  const s=Math.min(window.innerWidth/1000,(window.innerHeight-90)/620,1.5);
+  $("stageWrap").style.transform="scale("+s+")";
+}
+window.addEventListener("resize",fit);fit();
+</script>
+</body>
+</html>
