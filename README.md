@@ -23,6 +23,10 @@ Popular interview problems (sourced from LeetCode Discuss, Medium, dev.to — se
 - **Database read/write** → ticket booking (BookMyShow), stock exchange, payment system, key-value store, rate limiter, Instagram likes counter
 - **AI systems** → design an LLM-serving pipeline, RAG system, recommendation engine, fraud detection
 
+## How to run the movies
+
+Navigate to the Readme in each of the subfolders within the parent directory that covers a topic. There are instructions on how to run the html file.
+
 ## Sources
 
 - [Most Asked System Design Interview Questions for 2026 — LeetCode Discuss](https://leetcode.com/discuss/post/7494779/most-asked-system-design-interview-quest-v1ie/)
